@@ -1,0 +1,236 @@
+<html lang="ZH">
+<head>
+    <!-- 必须的 meta 标签 -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Title</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="bootstrap-switch/bootstrap-switch.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="bootstrap-switch/bootstrap-switch.js"></script>
+    <script src="bootstrap/js/bootstrap.js"></script>
+    <script src="js/localstorage.js"></script>
+</head>
+<body>
+<!-- Modal -->
+<div class="modal fade" id="ConnectMode">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="ConnectModeLabel">系统消息</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                111111111111
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="col-1">
+        <nav class="sidebar sidebar-offcanvas" style="padding: 3%">
+            <ul class="nav" style="height: 6%">
+                <li class="nav-item">
+                    <img src="static/icons/list.svg" class="align-self-auto" width="32px" height="32px" alt="">
+                </li>
+                <li class="nav-item" style="padding: 3%">
+                    <H5>ToolsForWeb</H5>
+                </li>
+            </ul>
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="Main.html">
+                        <img src="static/icons/link.svg" width="18px" height="18px" alt="">
+                        <span class="menu-title">数据库连接信息</span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="jsp/TranslateSQL.html">
+                        <img src="static/icons/database.svg" alt="">
+                        <span class="menu-title">数据库操作</span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="jsp/Test.html">
+                        <span class="menu-title">测试页面</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <div class="offset-3 col-4">
+        <form id="NewDBConnectionInfo">
+            <div class="mb-3">
+                <label class="form-label" for="DBConnectionName">数据库连接名</label>
+                <div class="input-group">
+                    <input id="DBConnectionName" name="DBConnectionName" class="form-control" type="text" list="DBConnectionNameList">
+                </div>
+                <datalist id="DBConnectionNameList">
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <div id="NoDBConnectionName-alert" class="alert alert-danger" role="alert" style="padding: 5px; display: none">
+                    <span style="font-size: 15px;">请输入数据库连接名</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="DBType">数据库类型</label>
+                <select id="DBType" name="DBType" class="form-select">
+                    <option value="MYSQL">Mysql</option>
+                    <option value="POSTGRES">Postgres</option>
+                    <option value="ORACLE">Oracle</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="Server">服务器地址</label>
+                <div class="input-group">
+                    <input id="Server" name="Server" type="text" class="form-control">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="Port">端口号</label>
+                <div class="input-group">
+                    <input id="Port" name="Port" type="text" class="form-control">
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+                <label for="DataBaseName">数据库名称</label>
+                <div class="input-group">
+                    <input id="DataBaseName" name="DataBaseName" type="text" class="form-control">
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                <label for="UserID">用户名</label>
+                <div class="input-group">
+                    <input id="UserID" name="UserID" type="text" class="form-control">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="Password">密码</label>
+                <div class="input-group">
+                    <input id="Password" name="Password" type="password" class="form-control">
+                </div>
+            </div>
+
+            <div class="btn-group float-right" role="group">
+                <button id="Save" type="button" class="btn btn-primary">保存</button>
+                <button id="Connect" type="button" class="btn btn-info">连接</button>
+                <button id="Delete" type="button" class="btn btn-danger">删除</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $().ready(function (){
+        $.ReloadLocalStorgeForDBConnectionName();
+    });
+
+    $("#Save").on("click", function (){
+        $.SetLocalStorgeForDBConnectionName()
+        $.ReloadLocalStorgeForDBConnectionName();
+        console.log(localStorage);
+    });
+
+    $("#Delete").on("click", function (){
+        localStorage.clear();
+        console.log(localStorage);
+    });
+
+    $("#Connect").on("click", function (){
+        $.ajax({
+            type: "POST",
+            url: "/DBConnect",
+            data: $("#NewDBConnectionInfo").serialize(),
+            dataType: "json",
+            success: function (res) {
+                $("#ConnectMode .modal-body").empty().append(res)
+                $("#ConnectMode").modal("show");
+                sessionStorage.setItem("DBINFO", $("#NewDBConnectionInfo").serialize());
+            },
+            error: function (res) {
+                alert("error");
+            }
+        });
+    });
+
+    $("#DBConnectionName").on("change", function (){
+        $.ReloadLocalStorageForDBConnectionInfo();
+    });
+
+    $.SetLocalStorgeForDBConnectionName = function () {
+        let DBConnectionName = $("#DBConnectionName").val();
+        if (DBConnectionName === "") {
+            $("#NoDBConnectionName-alert").show();
+            return false;
+        } else {
+            $("#NoDBConnectionName-alert").hide();
+        }
+        let DBConnectionInfoJson = $.GetDBConnectionInfoForm();
+        let DBConnectionInfo = localStorage.getItem("DBConnection");
+        if (DBConnectionInfo != null) {
+            DBConnectionInfo = JSON.parse(DBConnectionInfo);
+            DBConnectionInfo[DBConnectionName] = DBConnectionInfoJson;
+        } else {
+            DBConnectionInfo = {};
+            DBConnectionInfo[DBConnectionName] = DBConnectionInfoJson;
+        }
+
+        localStorage.setItem("DBConnectionInfo", JSON.stringify(DBConnectionInfo));
+    }
+
+    $.ReloadLocalStorgeForDBConnectionName = function () {
+        let DBConnectionInfo = JSON.parse(localStorage.getItem("DBConnectionInfo"));
+        $("#DBConnectionNameList").empty();
+        for (let DBConnectionName in DBConnectionInfo){
+            $("#DBConnectionNameList").append(`<option value='${DBConnectionName}'> ${DBConnectionName} </option>`);
+        }
+    }
+
+    $.ReloadLocalStorageForDBConnectionInfo = function () {
+        let DBConnectionName = $("#DBConnectionName").val();
+        let DBConnectionInfo = JSON.parse(localStorage.getItem("DBConnectionInfo"));
+        for (let DBConnectionInfoName in DBConnectionInfo){
+            if (DBConnectionInfoName === DBConnectionName) {
+                DBConnectionInfo = DBConnectionInfo[DBConnectionInfoName];
+                $("#DBConnectionName").val(DBConnectionInfo["DBConnectionName"]);
+                $("#DBType").val(DBConnectionInfo["DBType"]);
+                $("#Server").val(DBConnectionInfo["Server"]);
+                $("#Port").val(DBConnectionInfo["Port"]);
+                $("#DataBaseName").val(DBConnectionInfo["DataBaseName"]);
+                $("#UserID").val(DBConnectionInfo["UserID"]);
+                $("#Password").val(DBConnectionInfo["Password"]);
+                return true;
+            }
+        }
+    }
+
+    $.GetDBConnectionInfoForm = function() {
+        // 获取表单数据
+        let formData = $("#NewDBConnectionInfo").serializeArray();
+        let DBConnectionInfo = {};
+        $.each(formData, function(index, field){
+            DBConnectionInfo[field.name] = field.value;
+        });
+        // 将表单数据转换为Json格式
+        return DBConnectionInfo;
+    }
+</script>
+</body>
+</html>
