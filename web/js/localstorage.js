@@ -1,0 +1,6 @@
+
+function CreateModeForDialog (data) {
+  $("body")
+}
+
+
