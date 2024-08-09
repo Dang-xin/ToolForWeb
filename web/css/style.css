@@ -34,21 +34,7 @@ ul li, ol li, dl li {
     color: #fff;
 }
 
-.nav {
-    --bs-nav-link-padding-x: 1rem;
-    --bs-nav-link-padding-y: 0.5rem;
-    --bs-nav-link-font-weight: ;
-    --bs-nav-link-color: var(--bs-link-color);
-    --bs-nav-link-hover-color: var(--bs-link-hover-color);
-    --bs-nav-link-disabled-color: var(--bs-secondary-color);
-    display: flex;
-    flex-wrap: wrap;
-    padding-left: 0;
-    margin-bottom: 0;
-    list-style: none;
-}
-
-.nav .nav-item .nav-link {
+.sidebar .nav .nav-item .nav-link {
     display: -webkit-flex;
     display: flex;
     -webkit-align-items: center;
@@ -64,16 +50,4 @@ ul li, ol li, dl li {
     -webkit-transition-property: color;
     font-weight: 400;
     border-radius: 0px 20px 20px 0px;
-}
-
-.nav-link {
-    display: block;
-    padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
-    font-size: var(--bs-nav-link-font-size);
-    font-weight: var(--bs-nav-link-font-weight);
-    color: var(--bs-nav-link-color);
-    text-decoration: none;
-    background: none;
-    border: 0;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
