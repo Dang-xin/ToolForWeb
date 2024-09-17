@@ -51,10 +51,10 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted, reactive, ref} from 'vue'
-import type {ComponentSize, FormInstance, FormRules} from 'element-plus'
-import request from "@/components/js/axiosRequest.js";
-import {parseResponse} from "@/components/js/parseResponse.js"
+import { onMounted, reactive, ref } from 'vue'
+import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
+import { parseResponse } from "/src/components/ts/ParseResponse.ts"
+import request from "@/components/ts/AxiosRequest.js";
 
 interface DBConnectionInfoItem {
   DBConnectionName: string

@@ -1,5 +1,5 @@
 <template>
-  <el-row style="height: 5%;">
+  <el-row type="flex" align="middle" style="height: 50px;">
     <el-col>
       <el-button type="primary" size="small">运行</el-button>
     </el-col>
@@ -15,7 +15,7 @@
 import * as monaco from "monaco-editor";
 import {onMounted, ref} from "vue";
 import { format } from 'sql-formatter';
-import { main } from '@/components/js/sqlEditor'
+import { main } from '@/components/ts/SqlEditor'
 
 const sqlEditor = ref();
 const editData = defineProps({
@@ -24,6 +24,7 @@ const editData = defineProps({
     default: ''
   }
 });
+
 const emit = defineEmits(["getQueryFromEdit"]);
 let editor: monaco.editor.IStandaloneCodeEditor;
 let provider: monaco.IDisposable;
@@ -110,4 +111,3 @@ defineExpose({
 
 
 </script>
-

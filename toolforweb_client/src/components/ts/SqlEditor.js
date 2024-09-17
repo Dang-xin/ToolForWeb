@@ -1,4 +1,4 @@
-import {keywords, operators, builtinFunctions, builtinVariables } from "@/components/js/sql";
+import {keywords, operators, builtinFunctions, builtinVariables } from "@/components/ts/Sql";
 import * as monaco from "monaco-editor";
 
 export function main (functionName, editor) {
