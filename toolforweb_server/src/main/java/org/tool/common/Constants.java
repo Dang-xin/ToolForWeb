@@ -10,11 +10,17 @@ public class Constants {
         public final static String ORACLE = "oracle";
     }
 
+    public class SuccessCode {
+        // 成功信息 + 数据
+        public final static String RESPONSE_WITH_DATA = "ResponseWithData";
+        // 成功信息
+        public final static String RESPONSE_WITHOUT_DATA = "ResponseWithoutData";
+    }
     public class ErrorCode {
         // 系统错误
-        public final static String SYSTEM_ERROR = "系统异常";
+        public final static String SYSTEM_ERROR = "SystemError";
         // 实行错误
-        public final static String RUNNING_ERROR = "运行异常";
+        public final static String RUNNING_ERROR = "RuntimeError";
     }
 
     public class ErrorMessage {
@@ -29,7 +35,7 @@ public class Constants {
         // 数据库连接失败
         public final static String DB_CONNECT_ERROR = "数据库连接失败";
         // 暂时未实现该数据库的连接方式
-        public final static String NO_DB_CONNECT_ERROR = "数据库连接失败";
+        public final static String NO_DB_CONNECT_ERROR = "暂时未实现该数据库的连接方式";
     }
 
     public class SuccessMessage {
@@ -39,7 +45,9 @@ public class Constants {
 
     public class OtherConstants {
         // ResponseUtil.errorCode
-        public final static String ERROR_CODE = "errorCode";
+        public final static String CODE = "code";
+        // ResponseUtil.successMessage
+        public final static String SUCCESS_MESSAGE = "successMessage";
         // ResponseUtil.errorMessage
         public final static String ERROR_MESSAGE = "errorMessage";
         // ResponseUtil.data

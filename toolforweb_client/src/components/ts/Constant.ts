@@ -1,4 +1,15 @@
 
+export enum responseCode {
+    // 成功信息 + 数据
+    RESPONSE_WITH_DATA = "ResponseWithData",
+    // 成功信息
+    RESPONSE_WITHOUT_DATA = "ResponseWithoutData",
+    // 系统错误
+    SYSTEM_ERROR = "SystemError",
+    // 实行错误
+    RUNNING_ERROR = "RuntimeError"
+}
+
 export enum DB {
     Name = "ToolForWeb",
     ID = "id",

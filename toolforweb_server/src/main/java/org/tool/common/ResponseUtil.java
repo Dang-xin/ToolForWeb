@@ -46,6 +46,9 @@ public class ResponseUtil {
 
     public static String success(String successMessage) throws ServerException {
         ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> dataMap= new HashMap<>();
+        dataMap.put(Constants.OtherConstants.CODE, Constants.SuccessCode.RESPONSE_WITHOUT_DATA);
+        dataMap.put(Constants.OtherConstants.SUCCESS_MESSAGE, successMessage);
         try {
             return objectMapper.writeValueAsString(successMessage);
         } catch (JsonProcessingException e) {
@@ -53,9 +56,11 @@ public class ResponseUtil {
         }
     }
 
-    public static String success(Object data) throws ServerException {
+    public static String success(String successMessage, Object data) throws ServerException {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> dataMap= new HashMap<>();
+        dataMap.put(Constants.OtherConstants.CODE, Constants.SuccessCode.RESPONSE_WITH_DATA);
+        dataMap.put(Constants.OtherConstants.SUCCESS_MESSAGE, successMessage);
         dataMap.put(Constants.OtherConstants.DATA, data);
         try {
             return objectMapper.writeValueAsString(dataMap);
@@ -68,7 +73,7 @@ public class ResponseUtil {
         ObjectMapper objectMapper = new ObjectMapper();
 
         Map<String, String> errorMap= new HashMap<>();
-        errorMap.put(Constants.OtherConstants.ERROR_CODE, errorCode);
+        errorMap.put(Constants.OtherConstants.CODE, errorCode);
         errorMap.put(Constants.OtherConstants.ERROR_MESSAGE, errorMessage);
         try {
             return objectMapper.writeValueAsString(errorMap);

@@ -16,12 +16,12 @@ import * as monaco from "monaco-editor";
 import {onMounted, ref} from "vue";
 import { format } from 'sql-formatter';
 import { main } from '@/components/ts/SqlEditor'
+import * as Constant from '@/components/ts/Constant'
 
 const sqlEditor = ref();
-const editData = defineProps({
+let editData = defineProps({
   queryFromDBQueryList: {
-    type: String,
-    default: ''
+    type: Object,
   }
 });
 
@@ -37,7 +37,7 @@ onMounted(() => {
 function initSqlEditor() {
   editor = monaco.editor.create(sqlEditor.value,
       {
-        value: editData.queryFromDBQueryList, // 编辑器初始显示文字
+        value: editData.queryFromDBQueryList[Constant.QueryInfoItem.Query].length > 0 ? editData.queryFromDBQueryList[Constant.QueryInfoItem.Query][0] : Constant.String.Empty , // 编辑器初始显示文字
         language: "pgsql", // 语言支持自行查阅demo
         automaticLayout: true, // 自适应布局
         theme: "vs", // 官方自带三种主题vs, hc-black, or vs-dark
@@ -102,7 +102,7 @@ function registerCompletion() {
 }
 
 function returnQueryToDBQueryList() {
-  emit("getQueryFromEdit",editor.getValue())
+  emit("getQueryFromEdit",editData);
 }
 
 defineExpose({

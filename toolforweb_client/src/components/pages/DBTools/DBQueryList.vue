@@ -51,7 +51,7 @@
             <el-dialog
                 v-if="tableRowEditId === point.column.id && tableColumnEditIndex === point.$index"
                 v-model="SqlEditorVisible" title="SQL编辑器" :before-close="editorClose" :append-to-body='true'>
-              <SqlEditor :queryFromDBQueryList="point.row.query" @getQueryFromEdit="getRowQueryFromSqlEditor" ref="invokeRef" />
+              <SqlEditor :queryFromDBQueryList="point.row" @getQueryFromEdit="getRowQueryFromSqlEditor" ref="invokeRef" />
             </el-dialog>
             <span v-else>点击查看详细内容</span>
           </template>
@@ -109,6 +109,7 @@ import Enumerable from 'linq';
 import { useDBQueryListStore } from "@/components/ts/PiniaStore"
 import QueryInfo from "@/components/ts/formItem/QueryInfo";
 import * as Constant from "@/components/ts/Constant"
+import {QueryInfoItem} from "@/components/ts/Constant";
 
 const query = ref('');
 
@@ -148,9 +149,9 @@ function addItem() {
   const queryInfo = new QueryInfo(maxQueryListId.value,
       Constant.String.Empty,
       Constant.String.Empty,
-      Constant.String.Empty,
+      [Constant.String.Empty],
       Constant.DBOperate.Insert,
-      Constant.String.Empty);
+      [Constant.String.Empty]);
   queryInfo.addNewQueryInfo(queryListInfo.value)
 }
 
@@ -177,8 +178,10 @@ function setCellValue() {
   tableColumnEditIndex.value = -1;
 }
 
-function getRowQueryFromSqlEditor(query) {
-  queryListInfo.value.at(tableColumnEditIndex.value).query = query;
+function getRowQueryFromSqlEditor(queryData: QueryInfoItem) {
+  queryListInfo.value.at(tableColumnEditIndex.value).query = queryData["queryData.queryFromDBQueryList"][Constant.QueryInfoItem.Query];
+  queryListInfo.value.at(tableColumnEditIndex.value).result = queryData["queryData.queryFromDBQueryList"][Constant.QueryInfoItem.Result];
+
 }
 
 function editorClose(done: () => void) {

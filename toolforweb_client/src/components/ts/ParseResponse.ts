@@ -1,26 +1,33 @@
 import { ElMessage } from 'element-plus'
+import * as Constant from "./Constant";
 
 // 用于判断返回值是否
-export function parseResponse(response) {
-    if (response.data === "") {
+export function parseResponse(response: Object) {
+    let data = response["data"];
+    if (typeof response === "string" && data === Constant.String.Empty) {
         ElMessage({
             message: '请求返回的结果异常，需要联系管理员!',
             type: "error"
         });
-    } else if (response.data["errorCode"] !== undefined) {
+    } else if (data["code"] === Constant.responseCode.RESPONSE_WITH_DATA) {
         ElMessage({
-            message: response.data["errorCode"] + ':' + response.data["errorMessage"],
-            type: "error"
-        });
-    } else if(typeof response === "string") {
-        ElMessage({
-            message: response,
-            type: "error"
-        });
-    } else if (response.data["data"] === undefined) {
-        ElMessage({
-            message: response.data,
+            message: data["successMessage"],
             type: "success"
+        });
+    } else if (data["code"] === Constant.responseCode.RESPONSE_WITHOUT_DATA) {
+        ElMessage({
+            message: data["successMessage"],
+            type: "success"
+        });
+    } else if (data["code"] === Constant.responseCode.SYSTEM_ERROR) {
+        ElMessage({
+            message: "系统错误: " + data["successMessage"],
+            type: "error"
+        });
+    } else if (data["code"] === Constant.responseCode.RUNNING_ERROR) {
+        ElMessage({
+            message: "运行错误: " + data["successMessage"],
+            type: "error"
         });
     }
 }
