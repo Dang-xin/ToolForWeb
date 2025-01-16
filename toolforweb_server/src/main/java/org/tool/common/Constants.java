@@ -36,22 +36,32 @@ public class Constants {
         public final static String DB_CONNECT_ERROR = "数据库连接失败";
         // 暂时未实现该数据库的连接方式
         public final static String NO_DB_CONNECT_ERROR = "暂时未实现该数据库的连接方式";
+        // 从SQL中获取表名失败
+        public final static String GET_TABLES_NAME_FROM_SQL_ERROR = "从SQL中获取表名失败";
+        // SQL解析失败
+        public final static String PARSER_SQL_ERROR = "SQL解析失败";
+        // 获取请求参数失败
+        public final static String GET_DATA_FROM_HTTP_ERROR = "获取请求参数失败";
+        // 数据库操作失败
+        public final static String DB_OPERATION_ERROR = "数据库操作失败";
     }
 
     public class SuccessMessage {
         // 数据库连接成功
         public final static String DB_CONNECT_SUCCESS = "数据库连接成功";
+        // 从SQL中获取表名成功
+        public final static String GET_TABLES_NAME_FROM_SQL_SUCCESS = "数据库连接成功";
     }
 
     public class OtherConstants {
         // ResponseUtil.errorCode
-        public final static String CODE = "code";
+        public final static String CODE = "Code";
         // ResponseUtil.successMessage
-        public final static String SUCCESS_MESSAGE = "successMessage";
+        public final static String SUCCESS_MESSAGE = "SuccessMessage";
         // ResponseUtil.errorMessage
-        public final static String ERROR_MESSAGE = "errorMessage";
+        public final static String ERROR_MESSAGE = "ErrorMessage";
         // ResponseUtil.data
-        public final static String DATA = "data";
+        public final static String DATA = "Data";
         // DBINFO
         public final static String DBINFO = "DBINFO";
     }

@@ -1,21 +1,27 @@
 <template>
-  <el-button @click="addMess">追加值</el-button>
-  <el-button @click="changeMess">改变值</el-button>
-  {{ mess }}
+  <el-tabs v-model="activeName" @before-leave="handleBeforeLeave">
+    <el-tab-pane label="用户管理" name="first">用户管理</el-tab-pane>
+    <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
+    <el-tab-pane label="角色管理" name="third">角色管理</el-tab-pane>
+  </el-tabs>
 </template>
 
-<script lang="ts" setup>
-import {computed, ref} from "vue";
+<script>
+import { ref } from 'vue';
 
-const mess = ref([]);
+export default {
+  setup() {
+    const activeName = ref('first');
 
-function addMess() {
-  const object = {"key": "1", "value": "mess1"};
-  mess.value.push(object);
-}
+    const handleBeforeLeave = (newTab, oldTab) => {
+      console.log('即将离开的标签页的key:', oldTab);
+      console.log('即将激活的标签页的key:', newTab);
+    };
 
-function changeMess() {
-   mess.value[mess.value.length-1]["key"] = "mess2";
-}
-
+    return {
+      activeName,
+      handleBeforeLeave,
+    };
+  },
+};
 </script>

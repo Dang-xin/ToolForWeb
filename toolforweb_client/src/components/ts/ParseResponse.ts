@@ -9,27 +9,28 @@ export function parseResponse(response: Object) {
             message: '请求返回的结果异常，需要联系管理员!',
             type: "error"
         });
-    } else if (data["code"] === Constant.responseCode.RESPONSE_WITH_DATA) {
+    } else if (data[Constant.response.CODE] === Constant.response.RESPONSE_WITH_DATA) {
         ElMessage({
-            message: data["successMessage"],
+            message: data[Constant.response.SUCCESS_MESSAGE],
             type: "success"
         });
-    } else if (data["code"] === Constant.responseCode.RESPONSE_WITHOUT_DATA) {
+    } else if (data[Constant.response.CODE] === Constant.response.RESPONSE_WITHOUT_DATA) {
         ElMessage({
-            message: data["successMessage"],
+            message: data[Constant.response.SUCCESS_MESSAGE],
             type: "success"
         });
-    } else if (data["code"] === Constant.responseCode.SYSTEM_ERROR) {
+    } else if (data[Constant.response.CODE] === Constant.response.SYSTEM_ERROR) {
         ElMessage({
-            message: "系统错误: " + data["successMessage"],
+            message: "系统错误: " + data[Constant.response.ERROR_MESSAGE],
             type: "error"
         });
-    } else if (data["code"] === Constant.responseCode.RUNNING_ERROR) {
+    } else if (data[Constant.response.CODE] === Constant.response.RUNNING_ERROR) {
         ElMessage({
-            message: "运行错误: " + data["successMessage"],
+            message: "运行错误: " + data[Constant.response.ERROR_MESSAGE],
             type: "error"
         });
     }
+    return data;
 }
 
 export function error(message: string) {
@@ -43,5 +44,12 @@ export function success(message: string) {
     ElMessage({
         message: message,
         type: "success"
+    });
+}
+
+export function info(message: string) {
+    ElMessage({
+        message: message,
+        type: "info"
     });
 }

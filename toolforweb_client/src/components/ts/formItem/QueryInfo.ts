@@ -3,11 +3,11 @@ export default class QueryInfo {
     id: number;
     businessName: string;
     queryName: string;
-    query: Array<string>;
+    query: Array<object>;
     status: number;
-    result: Array<string>;
+    result: Array<object>;
 
-    constructor(id: number, businessName: string, queryName: string, query: Array<string>, status: number, result: Array<string>) {
+    constructor(id: number, businessName: string, queryName: string, query: Array<object>, status: number, result: Array<object>) {
         this.id = id;
         this.businessName = businessName;
         this.queryName = queryName;

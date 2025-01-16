@@ -10,7 +10,6 @@ const routes =  [
     { path: '/DBConnection', name: 'DBConnection', component: DBConnection },
     { path: '/DBTools', redirect: { name: 'DBQueryList' } },
     { path: '/DBTools/DBQueryList', name: 'DBQueryList', component: DBQueryList },
-    { path: '/DBTools/SqlEditor', name: 'SqlEditor', component: SqlEditor },
     { path: '/Test', name: 'Test', component: Test },
 ]
 

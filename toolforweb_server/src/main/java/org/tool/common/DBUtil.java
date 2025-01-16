@@ -1,14 +1,16 @@
 package org.tool.common;
 
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import org.tool.bean.ColumnBean;
 import org.tool.bean.DBInfoBean;
+import org.tool.bean.TableBean;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class DBUtil {
-    public static Connection conn;
-    public static void getConnection(String DBType, DBInfoBean DBInfo) throws ServerException {
+    public Connection getConnection(String DBType, DBInfoBean DBInfo) throws ServerException {
         if (DBType == null || DBType.isEmpty()) {
             throw new ServerException(Constants.ErrorCode.RUNNING_ERROR, Constants.ErrorMessage.DBTYPE_INPUT_ERROR);
         }
@@ -26,7 +28,7 @@ public class DBUtil {
                 DBConnectStr.append("/");
                 DBConnectStr.append(DBInfo.getDataBase());
 
-                conn = DriverManager.getConnection(DBConnectStr.toString(), DBInfo.getUserId(), DBInfo.getPassword());
+                return DriverManager.getConnection(DBConnectStr.toString(), DBInfo.getUserId(), DBInfo.getPassword());
             } catch (ClassNotFoundException e) {
                 throw new ServerException(Constants.ErrorCode.SYSTEM_ERROR, Constants.ErrorMessage.DRIVER_EXISTS_ERROR);
             } catch (SQLException e) {
@@ -37,5 +39,60 @@ public class DBUtil {
         } else {
             throw new ServerException(Constants.ErrorCode.RUNNING_ERROR, Constants.ErrorMessage.DBTYPE_STATUS_ERROR);
         }
+        return null;
+    }
+
+    public Connection getConnection(HttpServletRequest request) throws ServerException {
+        String dbType = (String) request.getSession().getAttribute("DBType");
+        DBInfoBean dbInfo = (DBInfoBean) request.getSession().getAttribute("DBConnectionInfo");
+
+        if (Util.isNullOrEmpty(dbType) || dbInfo == null) {
+            return null;
+        }
+
+        return this.getConnection(dbType, dbInfo);
+    }
+
+    public ArrayList<TableBean> getDBTables(Connection conn, String tableNamePattern) throws ServerException {
+        ArrayList<TableBean> tableList = new ArrayList<>();
+        try {
+            DatabaseMetaData metaData = conn.getMetaData();
+            // 获取表名
+            ResultSet tables = metaData.getTables(null, null, tableNamePattern, new String[]{"TABLE"});
+            while (tables.next()) {
+                TableBean table = new TableBean();
+                table.setTableName(tables.getString("TABLE_NAME"));
+                table.setTableType(tables.getString("TABLE_NAME"));
+                table.setTableComment(tables.getString("REMARKS"));
+                table.setMetaTable(true);
+
+                // 获取列信息
+                ResultSet columns = metaData.getColumns(null, null, table.getTableName(), null);
+                while (columns.next()) {
+                    ColumnBean column = new ColumnBean();
+                    column.setColumnName(columns.getString("COLUMN_NAME"));
+                    column.setColumnType(columns.getString("TYPE_NAME"));
+                    column.setColumnComment(columns.getString("REMARKS"));
+                    column.setColumnSize(columns.getInt("COLUMN_SIZE"));
+                    column.setNotNull(columns.getString("NULLABLE") == "YES" ? false : true);
+                    table.getColumnList().add(column);
+                }
+
+                // 获取主键信息
+                ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, table.getTableName());
+                while (primaryKeys.next()) {
+                    for (ColumnBean column : table.getColumnList()) {
+                        if (column.getColumnName().equals(primaryKeys.getString("COLUMN_NAME"))) {
+                            column.setPrimaryKey(true);
+                            break;
+                        }
+                    }
+                }
+                tableList.add(table);
+            }
+        } catch (SQLException e) {
+            throw new ServerException(Constants.ErrorCode.RUNNING_ERROR, Constants.ErrorMessage.DB_OPERATION_ERROR);
+        }
+        return tableList;
     }
 }

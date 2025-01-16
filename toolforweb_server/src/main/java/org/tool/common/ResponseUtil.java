@@ -50,7 +50,7 @@ public class ResponseUtil {
         dataMap.put(Constants.OtherConstants.CODE, Constants.SuccessCode.RESPONSE_WITHOUT_DATA);
         dataMap.put(Constants.OtherConstants.SUCCESS_MESSAGE, successMessage);
         try {
-            return objectMapper.writeValueAsString(successMessage);
+            return objectMapper.writeValueAsString(dataMap);
         } catch (JsonProcessingException e) {
             throw new ServerException(Constants.ErrorCode.RUNNING_ERROR, Constants.ErrorMessage.JSON_SERIALIZATION_ERROR);
         }

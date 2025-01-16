@@ -1,13 +1,20 @@
 
-export enum responseCode {
+export enum response {
+    CODE = "Code",
+
+    DATA = "Data",
     // 成功信息 + 数据
     RESPONSE_WITH_DATA = "ResponseWithData",
-    // 成功信息
+    // 请求成功
     RESPONSE_WITHOUT_DATA = "ResponseWithoutData",
     // 系统错误
     SYSTEM_ERROR = "SystemError",
     // 实行错误
-    RUNNING_ERROR = "RuntimeError"
+    RUNNING_ERROR = "RuntimeError",
+    // 成功信息
+    SUCCESS_MESSAGE = "SuccessMessage",
+    // 错误信息
+    ERROR_MESSAGE = "ErrorMessage"
 }
 
 export enum DB {
@@ -25,6 +32,13 @@ export enum DBOperate {
     Insert = 1,
     Delete = 2,
     Update = 3
+}
+
+export enum queryItem {
+    Number = "number",
+    Tab = "Tab",
+    Value = "value",
+    ValueToHtml = "valueToHtml"
 }
 
 export enum String {

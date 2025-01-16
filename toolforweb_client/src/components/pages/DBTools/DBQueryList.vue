@@ -149,9 +149,9 @@ function addItem() {
   const queryInfo = new QueryInfo(maxQueryListId.value,
       Constant.String.Empty,
       Constant.String.Empty,
-      [Constant.String.Empty],
+      new Array<object>({[Constant.queryItem.Tab]: "Tab1", [Constant.queryItem.Number]: 1, [Constant.queryItem.Value]: Constant.String.Empty}),
       Constant.DBOperate.Insert,
-      [Constant.String.Empty]);
+      new Array<object>({tab: "Tab1", number: 1, value: Constant.String.Empty}));
   queryInfo.addNewQueryInfo(queryListInfo.value)
 }
 
@@ -179,8 +179,8 @@ function setCellValue() {
 }
 
 function getRowQueryFromSqlEditor(queryData: QueryInfoItem) {
-  queryListInfo.value.at(tableColumnEditIndex.value).query = queryData["queryData.queryFromDBQueryList"][Constant.QueryInfoItem.Query];
-  queryListInfo.value.at(tableColumnEditIndex.value).result = queryData["queryData.queryFromDBQueryList"][Constant.QueryInfoItem.Result];
+  queryListInfo.value.at(tableColumnEditIndex.value).query = queryData[Constant.QueryInfoItem.Query];
+  queryListInfo.value.at(tableColumnEditIndex.value).result = queryData[Constant.QueryInfoItem.Result];
 
 }
 

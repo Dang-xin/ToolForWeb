@@ -18,7 +18,6 @@
             <span>数据库操作</span>
           </template>
           <el-menu-item index="/DBTools">查询列表</el-menu-item>
-          <el-menu-item index="/DBTools/SqlEditor">编辑器</el-menu-item>
         </el-sub-menu>
         <el-menu-item index="/Test">
           <el-icon></el-icon>

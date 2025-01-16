@@ -12,10 +12,13 @@ import org.tool.common.ResponseUtil;
 import org.tool.common.ServerException;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @WebServlet("/DBConnect")
 public class DBConnectionServlet extends HttpServlet {
 
+    private DBUtil dbUtil = new DBUtil();
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doPost(request,response);
@@ -33,10 +36,18 @@ public class DBConnectionServlet extends HttpServlet {
         dbInfo.setPassword(request.getParameter("password"));
 
         try {
-            DBUtil.getConnection(dbType, dbInfo);
+            Connection conn = dbUtil.getConnection(dbType, dbInfo);
+            if (conn == null) {
+                response.getWriter().write(ResponseUtil.error(Constants.ErrorCode.RUNNING_ERROR, Constants.ErrorMessage.DB_CONNECT_ERROR));
+            }
+            conn.close();
+            request.getSession().setAttribute("DBType", dbType);
+            request.getSession().setAttribute("DBConnectionInfo", dbInfo);
             response.getWriter().write(ResponseUtil.success(Constants.SuccessMessage.DB_CONNECT_SUCCESS));
         } catch (ServerException SE) {
             response.getWriter().write(ResponseUtil.error(SE.getErrorCode(),SE.getErrorMessage()));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
