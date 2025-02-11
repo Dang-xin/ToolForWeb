@@ -3,6 +3,7 @@
     <el-col>
       <el-button @click="DBQueryListStore.uploadData(queryListInfo)">保存</el-button>
       <el-button @click="initQueryInfoList()">加载</el-button>
+      <el-button @click="deleteQueryInfoList()">删除</el-button>
     </el-col>
   </el-row>
 
@@ -103,19 +104,19 @@
 
 <script lang="ts" setup>
 import {computed, onMounted, ref} from "vue";
-import SqlEditor from "@/components/pages/DBTools/SqlEditor.vue";
+import SqlEditor from "./SqlEditor.vue";
 import {ElMessageBox} from "element-plus";
 import Enumerable from 'linq';
-import { useDBQueryListStore } from "@/components/ts/PiniaStore"
-import QueryInfo from "@/components/ts/formItem/QueryInfo";
-import * as Constant from "@/components/ts/Constant"
-import {QueryInfoItem} from "@/components/ts/Constant";
+import { useDBQueryListStore } from "../../ts/PiniaStore"
+import * as Constant from "../../ts/Constant"
+import * as Type from "../../ts/Type"
+import * as Message from "../../ts/ParseResponse"
 
 const query = ref('');
 
 const DBQueryListStore = useDBQueryListStore();
 
-const queryListInfo = ref<Array<QueryInfo>>([]);
+const queryListInfo = ref<Array<Type.QueryInfoItem>>([]);
 
 const search = ref('');
 
@@ -123,39 +124,51 @@ const inputRef = ref();
 const invokeRef = ref();
 
 let tableRowEditId = ref() // 控制可编辑的每一行
-let tableColumnEditIndex = ref<number>(); //控制可编辑的每一列
+let tableColumnEditIndex = ref<number>(0); //控制可编辑的每一列
 let SqlEditorVisible = ref(true);
 
 const filterQueryList = computed(() =>
     queryListInfo.value.filter(
         (data) =>
             !search.value ||
-            data[Constant.QueryInfoItem.BusinessName].toLowerCase().includes(search.value.toLowerCase()) ||
-            data[Constant.QueryInfoItem.BusinessName] === Constant.String.Empty
+            data.BusinessName.toLowerCase().includes(search.value.toLowerCase()) ||
+            data.BusinessName === Constant.String.Empty
     )
 )
 
 const maxQueryListId = computed(() =>
     {
-      return queryListInfo.value.length === 0 ? 0 : Enumerable.from(queryListInfo.value).max(query => query.id) + 1;
+      return queryListInfo.value.length === 0 ? 0 : Enumerable.from(queryListInfo.value).max(query => query.No) + 1;
     }
 )
 
 function deleteRow (index: number) {
-  queryListInfo.value[index].status = Constant.DBOperate.Delete;
+  queryListInfo.value[index].Status = Constant.DBOperate.Delete;
 }
 
 function addItem() {
-  const queryInfo = new QueryInfo(maxQueryListId.value,
-      Constant.String.Empty,
-      Constant.String.Empty,
-      new Array<object>({[Constant.queryItem.Tab]: "Tab1", [Constant.queryItem.Number]: 1, [Constant.queryItem.Value]: Constant.String.Empty}),
-      Constant.DBOperate.Insert,
-      new Array<object>({tab: "Tab1", number: 1, value: Constant.String.Empty}));
-  queryInfo.addNewQueryInfo(queryListInfo.value)
+  const tab: Type.QueryTabItem = {
+    Tab: "Tab1",
+    No: 1,
+    Value: Constant.String.Empty,
+  }
+
+  const queryInfo: Type.QueryInfoItem = {
+    No: maxQueryListId.value,
+    BusinessName: Constant.String.Empty,
+    QueryName: Constant.String.Empty,
+    Query: Array<Type.QueryTabItem>({
+      Tab: "Tab1",
+      No: 1,
+      Value: Constant.String.Empty}),
+    Status: Constant.DBOperate.Insert,
+    Result: []
+  }
+
+  queryListInfo.value.push(queryInfo);
 }
 
-function showUnitInput(row, column) {
+function showUnitInput(row: any, column:any) {
   if (column.property === undefined) {
     return;
   }
@@ -166,7 +179,7 @@ function showUnitInput(row, column) {
   tableColumnEditIndex.value = filterQueryList.value.indexOf(row);
 
   query.value = row.query;
-  filterQueryList.value[tableColumnEditIndex.value].status = Constant.DBOperate.Update;
+  filterQueryList.value[tableColumnEditIndex.value].Status = Constant.DBOperate.Update;
 }
 
 function cellFocus() {
@@ -178,9 +191,16 @@ function setCellValue() {
   tableColumnEditIndex.value = -1;
 }
 
-function getRowQueryFromSqlEditor(queryData: QueryInfoItem) {
-  queryListInfo.value.at(tableColumnEditIndex.value).query = queryData[Constant.QueryInfoItem.Query];
-  queryListInfo.value.at(tableColumnEditIndex.value).result = queryData[Constant.QueryInfoItem.Result];
+function getRowQueryFromSqlEditor(queryData: Type.QueryInfoItem) {
+  
+  if ( tableColumnEditIndex.value !== undefined) {
+    tableColumnEditIndex.value
+    queryListInfo.value[tableColumnEditIndex.value].Query = queryData.Query;
+    queryListInfo.value[tableColumnEditIndex.value].Result = queryData.Result;
+  } else {
+    Message.error("没有被选中的行数据");
+     return;
+  }
 
 }
 
@@ -205,19 +225,23 @@ function initQueryInfoList() {
   queryListInfo.value.length = 0;
   const data = DBQueryListStore.reloadData();
   data.then((rows) => {
-    rows.forEach(row => {
-      const queryInfo = new QueryInfo(
-          row[Constant.QueryInfoItem.ID],
-          row[Constant.QueryInfoItem.BusinessName],
-          row[Constant.QueryInfoItem.QueryName],
-          row[Constant.QueryInfoItem.Query],
-          row[Constant.QueryInfoItem.Status],
-          row[Constant.QueryInfoItem.Result]);
-      queryInfo.addNewQueryInfo(queryListInfo.value);
-    })
+      rows.forEach(row => {
+        queryListInfo.value.push({
+          No: row.No,
+          BusinessName: row.BusinessName,
+          QueryName: row.QueryName,
+          Query: row.Query,
+          Status: row.Status,
+          Result: row.Result
+        })
+      });
   },(reason) => {
 
   })
+}
+
+function deleteQueryInfoList() {
+  DBQueryListStore.delete();
 }
 
 onMounted(() => {

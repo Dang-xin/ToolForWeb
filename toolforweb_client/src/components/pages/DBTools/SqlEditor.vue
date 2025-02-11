@@ -9,13 +9,13 @@
       >
         <el-option
             v-for="item in sqlSelect"
-            :key="item[Constant.queryItem.Number]"
-            :label="item[Constant.queryItem.Number]"
-            :value="item[Constant.queryItem.Value]"
+            :key="item.No"
+            :label="item.No"
+            :value="item.Value"
         >
           <el-tooltip placement="right">
-            <template #content> <div v-html="item[Constant.queryItem.ValueToHtml]"> </div></template>
-            <span>{{ item[Constant.queryItem.Number] }}</span>
+            <template #content> <div v-html="item.ValueToHtml"> </div></template>
+            <span>{{ item.No }}</span>
           </el-tooltip>
         </el-option>
       </el-select>
@@ -31,7 +31,7 @@
   <el-row style="margin-top: 1%">
     <el-col>
       <el-tabs
-          v-model="editableTabsNumber"
+          v-model="editableTabsNo"
           type="card"
           editable
           @edit="handleTabsEdit"
@@ -39,9 +39,9 @@
       >
         <el-tab-pane
             v-for="item in tabEditData"
-            :key="item[Constant.queryItem.Number]"
-            :label="item[Constant.queryItem.Tab]"
-            :name="item[Constant.queryItem.Number]"
+            :key="item.No"
+            :label="item.Tab"
+            :name="item.No"
         >
         </el-tab-pane>
       </el-tabs>
@@ -56,27 +56,28 @@
 import * as monaco from "monaco-editor";
 import {computed, onMounted, ref} from "vue";
 import { format } from 'sql-formatter';
-import * as main from '@/components/ts/SqlEditor'
-import * as Util from '@/components/ts/CommonUtil'
-import * as Constant from '@/components/ts/Constant'
+import * as main from '../../ts/SqlEditor';
+import * as Util from '../../ts/CommonUtil';
+import * as Constant from '../../ts/Constant';
+import * as Type from "../../ts/Type";
 import {TabPaneName, TabsPaneContext} from "element-plus";
+import { it } from "element-plus/es/locale";
 
 const sqlEditor = ref();
 let editData = defineProps({
-  queryFromDBQueryList: {
-    type: Object,
-  }
+  queryFromDBQueryList: Object
 });
 
-let tabEditData = ref<object[]>(editData.queryFromDBQueryList[Constant.QueryInfoItem.Query]);
-let editableTabsNumber = ref(1);
+let tabEditData = ref<Array<Type.QueryTabItem>>(editData.queryFromDBQueryList !== undefined ? editData.queryFromDBQueryList.Query : []);
+
+let editableTabsNo = ref(1);
 
 const emit = defineEmits(["getQueryFromEdit"]);
 let editor: monaco.editor.IStandaloneCodeEditor;
 let provider: monaco.IDisposable;
 
 let selectedSqlName = ref('');
-let sqlSelect = ref<object[]>([]);
+let sqlSelect = ref<Array<Type.SqlSelectItem>>([]);
 
 const selectSqlValue = computed(() => {
   return selectedSqlName.value;
@@ -84,8 +85,8 @@ const selectSqlValue = computed(() => {
 const tabEditCount = computed(() => {
   if (tabEditData.value != null && tabEditData.value.length > 0) {
     return  tabEditData.value.reduce((max, item) => {
-      return item[Constant.queryItem.Number] > max ? item[Constant.queryItem.Number] : max;
-    }, tabEditData.value[0][Constant.queryItem.Number]);
+      return item.No > max ? item.No: max;
+    }, tabEditData.value[0].No);
   } else {
     return 1;
   }
@@ -98,7 +99,7 @@ onMounted(() => {
 function initSqlEditor() {
   editor = monaco.editor.create(sqlEditor.value,
       {
-        value: tabEditData.value.length > 0 ? tabEditData.value[0][Constant.queryItem.Value] : Constant.String.Empty , // 编辑器初始显示文字
+        value: tabEditData.value.length > 0 ? tabEditData.value[0].Value : Constant.String.Empty , // 编辑器初始显示文字
         language: "pgsql", // 语言支持自行查阅demo
         automaticLayout: true, // 自适应布局
         theme: "vs", // 官方自带三种主题vs, hc-black, or vs-dark
@@ -118,7 +119,7 @@ function initSqlEditor() {
   )
   registerCompletion()
 
-  const model = editor.getModel();
+  const model = editor.getModel()!;
   // 监听输入内容的变化
   model.onDidChangeContent(event =>  {
     event.changes.forEach(change => {
@@ -154,7 +155,7 @@ function registerCompletion() {
         endColumn: column - 1,
       });
       if (textBeforePointer === "") {
-        suggestions = main.getKeyWordsSuggestions();
+        // suggestions = main.getKeyWordsSuggestions();
       }
       return {
         suggestions
@@ -164,8 +165,8 @@ function registerCompletion() {
 }
 
 function returnQueryToDBQueryList() {
-  let activeValue = tabEditData.value.find(tab => tab[Constant.queryItem.Number] === editableTabsNumber.value);
-  activeValue[Constant.queryItem.Value] = editor.getValue();
+  let activeValue: Type.QueryTabItem = tabEditData.value.find(tab => tab.No === editableTabsNo.value)!;
+  activeValue.Value = editor.getValue();
 
   emit("getQueryFromEdit",editData.queryFromDBQueryList);
 }
@@ -175,43 +176,43 @@ const handleTabsEdit = (
     action: 'remove' | 'add'
 ) => {
   if (action === 'add') {
-    const newTabName = tabEditCount.value + 1
+    const newTabNo = tabEditCount.value + 1
     tabEditData.value.push({
-      [Constant.queryItem.Tab]: 'New Tab',
-      [Constant.queryItem.Number]: newTabName,
-      [Constant.queryItem.Value]: Constant.String.Empty
+      Tab: 'New Tab',
+      No: newTabNo,
+      Value: Constant.String.Empty,
     });
 
-    let oldActiveValue = tabEditData.value.find(tab => tab[Constant.queryItem.Number] === editableTabsNumber.value);
-    let newActiveValue = tabEditData.value.find(tab => tab[Constant.queryItem.Number] === newTabName);
-    oldActiveValue[Constant.queryItem.Value] = editor.getValue();
-    editableTabsNumber.value = newTabName
-    editor.setValue(newActiveValue[Constant.queryItem.Value]);
+    let oldActiveValue: Type.QueryTabItem = tabEditData.value.find(tab => tab.No=== editableTabsNo.value)!;
+    let newActiveValue: Type.QueryTabItem = tabEditData.value.find(tab => tab.No=== newTabNo)!;
+    oldActiveValue.Value = editor.getValue();
+    editableTabsNo.value = newTabNo
+    editor.setValue(newActiveValue.Value);
 
   } else if (action === 'remove') {
-    const tabs = tabEditData.value
-    let activeName = editableTabsNumber.value
+    const tabs: Array<Type.QueryTabItem> = tabEditData.value
+    let activeName = editableTabsNo.value
     if (activeName === targetName) {
       for(const tab of tabs) {
-        if (tab[Constant.queryItem.Number] === targetName) {
-          const nextTab = tabEditData.value.find(tab => tab[Constant.queryItem.Number] === targetName + 1 || tab[Constant.queryItem.Number] === targetName - 1);
+        if (tab.No === targetName) {
+          const nextTab = tabEditData.value.find(tab => tab.No === targetName + 1 || tab.No === targetName - 1);
           if (nextTab) {
-            activeName = nextTab[Constant.queryItem.Number]
+            activeName = nextTab.No
           }
         }
       }
     }
 
-    editableTabsNumber.value = activeName
-    tabEditData.value = tabs.filter((tab) => tab[Constant.queryItem.Number] !== targetName)
+    editableTabsNo.value = activeName
+    tabEditData.value = tabs.filter((tab) => tab.No !== targetName)
   }
 }
 
 const changeTab = (pane: TabsPaneContext) => {
-  let oldActiveValue = tabEditData.value.find(tab => tab[Constant.queryItem.Number] === editableTabsNumber.value);
-  let newActiveValue = tabEditData.value.find(tab => tab[Constant.queryItem.Number] === pane.props.name);
-  oldActiveValue[Constant.queryItem.Value] = editor.getValue();
-  editor.setValue(newActiveValue[Constant.queryItem.Value]);
+  let oldActiveValue: Type.QueryTabItem = tabEditData.value.find(tab => tab.No === editableTabsNo.value)!;
+  let newActiveValue: Type.QueryTabItem = tabEditData.value.find(tab => tab.No === pane.props.name)!;
+  oldActiveValue.Value = editor.getValue();
+  editor.setValue(newActiveValue.Value);
   changeSqlSelect();
 }
 
@@ -226,9 +227,9 @@ const changeSqlSelect = () => {
       let sql = format(value);
       let html = Util.strToHtml(sql);
       sqlSelect.value.push({
-        [Constant.queryItem.Number]: `SQL${index + 1}`,
-        [Constant.queryItem.Value]: sql,
-        [Constant.queryItem.ValueToHtml] : html
+        No: index + 1,
+        Value: sql,
+        ValueToHtml : html
       });
     }
   });

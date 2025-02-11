@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia'
-import * as message from "./ParseResponse";
+import * as Message from "./ParseResponse";
 import { toRaw } from "vue";
 import * as Constant from "./Constant";
+import * as Type from  "./Type";
+
+let indexedDB: IDBFactory = (window as any).mozIndexedDB || (window as any).indexedDB || (window as any).webkitIndexedDB || (window as any).msIndexedDB;
+let version: number = Number(getVersion());
+checkIndexDB();
 
 export const useDBQueryListStore = defineStore('DBQueryList', {
     // 静态数据
@@ -15,47 +20,55 @@ export const useDBQueryListStore = defineStore('DBQueryList', {
     },
     // actions即可以是同步函数也可以是异步函数
     actions: {
-        uploadData(data: object[]) {
-            const indexedDB = checkIndexDB();
-            const request = openIndexDB(indexedDB, Constant.DB.Name, Constant.StoreName.DBQueryList, 1);
+        uploadData(data: Array<Type.DBKey>) {
+            const request = openIndexDB(indexedDB, Constant.DB.Name, Constant.StoreName.DBQueryList, version);
 
             request.then((db) => {
+                if (db === null) {
+                    return;
+                }
                 updateData(db, Constant.StoreName.DBQueryList, data);
             },(reason) => {
-                message.error("数据保存执行错误");
+                Message.error("数据保存执行错误");
             })
 
         },
-        reloadData() {
+        reloadData(): Promise<Array<Type.QueryInfoItem>> {
             return new Promise((resolve, reject) => {
-                const indexedDB = checkIndexDB();
-                const request = openIndexDB(indexedDB, Constant.DB.Name, Constant.StoreName.DBQueryList, 1);
-                let result: Array<object> = [];
+                const request = openIndexDB(indexedDB, Constant.DB.Name, Constant.StoreName.DBQueryList, version);
 
                 request.then((db) => {
+                    if (db === null) {
+                        return;
+                    }
                     const data = getData(db, Constant.StoreName.DBQueryList);
                     data.then((rows) => {
+                        if (rows === null) {
+                            Message.error("没有取得数据");
+                            return;
+                        }
                         resolve(rows);
                     },(reason) => {
                         reject([]);
                     })
                 },(reason) => {
-                    message.error("数据读取错误");
+                    Message.error("数据读取错误");
                     reject([]);
                 })
-
             })
+        },
+        delete() {
+            deleteStore(Constant.StoreName.DBQueryList);
         }
-
     }
 });
 
 function checkIndexDB() {
-    const indexedDB = (window as any).mozIndexedDB || (window as any).indexedDB || (window as any).webkitIndexedDB || (window as any).msIndexedDB;
+ 
     if (!indexedDB) {
-        message.error("该浏览器不支持开启IndexDB");
+        Message.error("该浏览器不支持开启IndexDB");
     }
-    return indexedDB;
+    return;
 }
 
 function openIndexDB(indexedDB: IDBFactory, DBName: string, storeName: string, version: number) : Promise<IDBDatabase | null> {
@@ -65,11 +78,20 @@ function openIndexDB(indexedDB: IDBFactory, DBName: string, storeName: string, v
         const request= indexedDB.open(DBName, version);
         request.onsuccess = (event) => {
             db = (event.target as IDBOpenDBRequest).result;
-            message.success("数据库打开成功");
+            Message.success("数据库打开成功");
+            if (!db.objectStoreNames.contains(storeName)) {
+               const request = indexedDB.open(DBName, version + 1);
+               request.onupgradeneeded = (event) => {
+                const db = (event.target as IDBRequest).result;
+                if(!db.objectStoreNames.contains(storeName)) {
+                    createStore(db, storeName);
+                }
+            }
+            }
             resolve(db);
         }
         request.onerror = (event) => {
-            message.error("数据库打开失败");
+            Message.error("数据库打开失败");
             reject(null);
         }
         request.onupgradeneeded = (event) => {
@@ -82,51 +104,75 @@ function openIndexDB(indexedDB: IDBFactory, DBName: string, storeName: string, v
 }
 
 function createStore(db: IDBDatabase, storeName: string) {
-    // 为该数据库创建一个对象仓库，创建一个名为“DBQueryList”的仓库，并指定id作为键路径(keyPath)
-    let store = db.createObjectStore(storeName, {keyPath: Constant.DB.ID});
-    store.createIndex(Constant.DB.ID, Constant.DB.ID, {unique: true});
+    let store = db.createObjectStore(storeName, {keyPath: Constant.DB.No});
+    store.createIndex(Constant.DB.No, Constant.DB.No, {unique: true});
     store.transaction.oncomplete = (evt: any) => {
-        message.success("数据库创建成功");
+        Message.success(`数据库${storeName}创建成功,版本号${db.version}`);
     }
 }
 
-function updateData(db: IDBDatabase, storeName: string, dataList: object[]) {
+function deleteStore(storeName: string) {
+    const request = indexedDB.open(Constant.DB.Name, version + 1);
+    request.onsuccess = () => {
+        Message.success("存储库打开成功");
+    };
+    
+    request.onerror = () => {
+        Message.error("存储库打开失败");
+    };
+
+    request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+    
+        console.log(db.objectStoreNames.contains(storeName));
+        // 确保对象存储存在，然后删除
+        if (db.objectStoreNames.contains(storeName)) {
+            Message.success("存储库删除开始");
+            db.deleteObjectStore(storeName);
+            const storage: Storage = window.localStorage;
+            storage.setItem(Constant.DB.Version, String(db.version));
+            Message.success(`存储库${storeName}删除成功,版本号${(db.version)}`);
+        }
+    }
+}
+
+function updateData(db: IDBDatabase, storeName: string, dataList: Array<Type.DBKey>) {
     let transaction = db.transaction([storeName], "readwrite");
     let store = transaction.objectStore(storeName);
-    let result: IDBRequest<IDBValidKey>;
-    for (let data of dataList) {
-        const status = data[Constant.DB.Status];
+    let result: IDBRequest<IDBValidKey> | IDBRequest<undefined>;
+    dataList.forEach(data => {
+        const status = data.Status;
         if (status === Constant.DBOperate.Insert) {
-            data[Constant.DB.Status] = Constant.DBOperate.Select;
+            data.Status = Constant.DBOperate.Select;
             result = store.add(toRaw(data));
         } else if (status === Constant.DBOperate.Delete) {
-            result = store.delete(data[Constant.DB.ID]);
+            result = store.delete(data.No);
         } else if (status === Constant.DBOperate.Update) {
-            data[Constant.DB.Status] = Constant.DBOperate.Select;
+            data.Status = Constant.DBOperate.Select;
             result = store.put(toRaw(data));
-        } else if (status === Constant.DBOperate.Select) {
-            result = store.get(data[Constant.DB.ID]);
+        } else {
+            result = store.get(data.No);
         }
         result.onerror = () => {
-            data[Constant.DB.Status] = status;
-            message.error("处理数据失败:" + JSON.stringify(data));
+            data.Status = status;
+            Message.error("处理数据失败:" + JSON.stringify(data));
         }
         result.onsuccess = () => {
-            message.success(JSON.stringify(data) + "数据操作成功")
+            Message.success(JSON.stringify(data) + "数据操作成功")
         }
-    }
+    }); 
     transaction.oncomplete = () => {
-        message.success("事务提交成功");
+        Message.success("事务提交成功");
     }
     transaction.onerror= () => {
-        message.error("事务提交失败");
+        Message.error("事务提交失败");
     }
     db.close();
 }
 
-function getData(db: IDBDatabase, storeName: string): Promise<Array<object> | null> {
+function getData(db: IDBDatabase, storeName: string): Promise<Array<Type.QueryInfoItem> | null> {
     return new Promise((resolve, reject) => {
-        let data: Array<object> = [];
+        let data: Array<Type.QueryInfoItem> = [];
         let transaction = db.transaction([storeName], "readonly");
         let store = transaction.objectStore(storeName);
         let cursor = store.openCursor();
@@ -146,3 +192,10 @@ function getData(db: IDBDatabase, storeName: string): Promise<Array<object> | nu
     })
 }
 
+function getVersion(): string {
+    const storage: Storage = window.localStorage;
+    if (storage.getItem(Constant.DB.Version) === null) {
+        storage.setItem(Constant.DB.Version, String(1));
+    }
+    return storage.getItem(Constant.DB.Version)!;
+}

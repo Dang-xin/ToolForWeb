@@ -14,16 +14,6 @@ let tableSuggestions = [];
 let columnSuggestions = [];
 
 export function getKeyWordsSuggestions() {
-    let suggestions = [];
-    keywords.forEach(item => {
-        suggestions.push({
-            label: item,
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: item,
-            detail: '内置关键字'
-        });
-    });
-    return suggestions;
 }
 
 export function getAllTables(sql:  string) {

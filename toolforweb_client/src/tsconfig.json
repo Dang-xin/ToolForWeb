@@ -8,9 +8,9 @@
     "skipLibCheck": true
   },
   "include": [
-    "/src/components/ts/*.ts",
-    "/src/components/ts/formItem/*.ts",
-    "/src/components/pages/*.vue",
-    "/src/components/pages/DBTools/*.vue"
+    "./components/ts/*.ts",
+    "./components/ts/formItem/*.ts",
+    "./components/pages/*.vue",
+    "./components/pages/DBTools/*.vue"
   ]
 }
